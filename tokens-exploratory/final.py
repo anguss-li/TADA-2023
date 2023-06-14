@@ -42,12 +42,14 @@ for token in counts:
     table[token]["counts"] = counts[token]
     table[token]["ratio"] = defaultdict()
 
-    total_speakers = table[token]["counts"]["M"] + table[token]["counts"]["F"]
-    table[token]["ratio"]["M"] = table[token]["counts"]["M"] / total_speakers
-    table[token]["ratio"]["F"] = table[token]["counts"]["F"] / total_speakers
+    table[token]["total"] = table[token]["counts"]["M"] + table[token]["counts"]["F"]
+
+    table[token]["ratio"]["M"] = table[token]["counts"]["M"] / table[token]["total"]
+    table[token]["ratio"]["F"] = table[token]["counts"]["F"] / table[token]["total"]
     table[token]["ratio"]["F - M"] = (
         table[token]["ratio"]["F"] - table[token]["ratio"]["M"]
     )
+
 
 with open("exploratory_table.pickle", "wb") as handle:
     dump(table, handle, protocol=HIGHEST_PROTOCOL)

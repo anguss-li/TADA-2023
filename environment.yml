@@ -245,7 +245,7 @@ dependencies:
       - convokit==2.5.3
       - dill==0.3.6
       - emoji==1.7.0
-      - en-core-web-sm==3.3.0
+      - en-core-web-sm==3.5.0
       - ftfy==6.1.1
       - msgpack==1.0.5
       - msgpack-numpy==0.4.8

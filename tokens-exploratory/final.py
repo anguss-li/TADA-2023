@@ -2,9 +2,10 @@ from collections import Counter, defaultdict
 from pickle import HIGHEST_PROTOCOL, dump
 from typing import List
 
+import numpy as np
 from convokit import Corpus, Utterance
 
-corpus = Corpus(filename="../supreme_full_processed")
+corpus = Corpus(filename="../supreme_processed")
 
 # Filter out speakers without gender signal
 corpus = corpus.filter_utterances_by(
@@ -16,7 +17,7 @@ corpus = corpus.filter_utterances_by(
 counts = defaultdict(Counter)
 # keys: tokens in the vocabulary
 # values: Counter dictionaries
-#   keys: gender signals
+#   keys: str, gender signals
 #   values: how many speakers of given gender have said the token
 
 
@@ -34,22 +35,37 @@ for utt in corpus.iter_utterances():
 # Add percentages in a second run because this is a bit neater.
 table = defaultdict(defaultdict)
 # keys: tokens in the vocabulary
-# values: defaultdicts
-#   keys: either "counts" or "ratio"
-#   values: data for male and female speakers
+# values: default dicts
+#   keys: str, counts and ratios for male and female speakers
+#   values: int/floats
 
 for token in counts:
-    table[token]["counts"] = counts[token]
-    table[token]["ratio"] = defaultdict()
+    table[token]["M count"] = counts[token]["M"]
+    table[token]["F count"] = counts[token]["F"]
+    table[token]["total"] = table[token]["M count"] + table[token]["F count"]
 
-    table[token]["total"] = table[token]["counts"]["M"] + table[token]["counts"]["F"]
+    table[token]["M ratio"] = table[token]["M count"] / table[token]["total"]
+    table[token]["F ratio"] = table[token]["F count"] / table[token]["total"]
+    table[token]["F - M"] = table[token]["F ratio"] - table[token]["M ratio"]
 
-    table[token]["ratio"]["M"] = table[token]["counts"]["M"] / table[token]["total"]
-    table[token]["ratio"]["F"] = table[token]["counts"]["F"] / table[token]["total"]
-    table[token]["ratio"]["F - M"] = (
-        table[token]["ratio"]["F"] - table[token]["ratio"]["M"]
-    )
+# The total number of times a token is used, summed for all tokens in V
+total_vocab_usage = sum(table[token]["total"] for token in table)
+# The total number of times a token is used by a female speaker, summed for all tokens in V
+female_total_vocab_usage = sum(table[token]["F count"] for token in table)
+# The proportion of all token usage in the corpus done by female speakers
+p_j = female_total_vocab_usage / total_vocab_usage
 
+for token in table:
+    # The proportion of all token usage in the corpus taken up by this specific token
+    p_i = table[token]["total"] / total_vocab_usage
+    # The proportion of all token usage in the corpus taken up by this specific token,
+    # and where the speaker is female
+    p_ij = table[token]["F count"] / total_vocab_usage
+    # The positive pointwise mutual information (PMI) between:
+    #   i: the event this token is used
+    #   j: the event a female speaker speakuses a words (uses a word in V)
+    PPMI = max(np.log2(p_ij / (p_i * p_j)), 0) if p_ij != 0 else 0
+    table[token]["PPMI"] = PPMI
 
 with open("exploratory_table.pickle", "wb") as handle:
     dump(table, handle, protocol=HIGHEST_PROTOCOL)

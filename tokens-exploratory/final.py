@@ -63,8 +63,8 @@ for token in table:
     p_ij = table[token]["F count"] / total_vocab_usage
     # The positive pointwise mutual information (PMI) between:
     #   i: the event this token is used
-    #   j: the event a female speaker speakuses a words (uses a word in V)
-    PPMI = max(np.log2(p_ij / (p_i * p_j)), 0) if p_ij != 0 else 0
+    #   j: the event a female speaker speaks (uses a word in V)
+    PPMI = max(np.log2(p_ij / (p_i * p_j)), 0) if p_ij != 0 else None
     table[token]["PPMI"] = PPMI
 
 with open("exploratory_table.pickle", "wb") as handle:

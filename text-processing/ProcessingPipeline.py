@@ -1,10 +1,10 @@
-import nltk
-import spacy 
-import regex as re
+from typing import List
 
+import regex as re
 from convokit import Corpus, Speaker
 from convokit.text_processing import TextCleaner
-from typing import List
+from nltk.stem import WordNetLemmatizer
+from nltk.tokenize import word_tokenize
 
 
 class AdvocatesProcessor:
@@ -38,16 +38,15 @@ class AdvocatesProcessor:
         print("Cleaning text")
         self.corpus = cleaner.transform(self.corpus)
 
+        print("Lemmatizing and Tokenizing")
         for utt in self.corpus.iter_utterances():
             tokens = self.process_text(utt.text)
             utt.add_meta("lem-tokens", tokens)
 
     def process_text(self, text: str) -> List[str]:
         """Returns *lemmatized* tokens from text"""
-        # Quick googling suggest NLTK sentence tokenizer is faster than spacy's
-        nlp = spacy.load("en_core_web_sm", disable=["ner", "parser", "tagger"])
-        doc = nlp(text)
-        return [token.text for token in doc]
+        lemmatizer = WordNetLemmatizer()
+        return [lemmatizer.lemmatize(token, pos = "n") for token in word_tokenize(text)]
 
     def _get_gender_signal(self, advocate: Speaker) -> str:
         # Get name, split into first, middle(?) and last

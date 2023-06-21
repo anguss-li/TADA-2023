@@ -5,7 +5,7 @@ from typing import List
 import numpy as np
 from convokit import Corpus, Utterance
 
-corpus = Corpus(filename="../supreme_processed")
+corpus = Corpus(filename="../supreme_full_processed_lem")
 
 # Filter out speakers without gender signal
 corpus = corpus.filter_utterances_by(
@@ -21,13 +21,8 @@ counts = defaultdict(Counter)
 #   values: how many speakers of given gender have said the token
 
 
-def get_tokens(utt: Utterance) -> List[str]:
-    """Flattens the "tokens" dictionary of an Utterance into a list."""
-    return [tok["tok"] for sent in utt.retrieve_meta("tokens") for tok in sent["toks"]]
-
-
 for utt in corpus.iter_utterances():
-    tokens = get_tokens(utt)
+    tokens = utt.retrieve_meta("lem-tokens")
     gender = utt.get_speaker().retrieve_meta("gender_signal")
     for token in tokens:
         counts[token][gender] += 1

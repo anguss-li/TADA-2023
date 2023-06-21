@@ -90,6 +90,8 @@ def get_table(counts: "defaultdict[Counter]") -> "defaultdict[defaultdict]":
         PPMI = max(np.log2(p_ij / (p_i * p_j)), 0) if p_ij != 0 else None
         table[token]["PPMI"] = PPMI
 
+    return table
+
 
 if __name__ == "__main__":
     corpus = get_corpus()

@@ -54,8 +54,12 @@ def get_bootstrap_statistic(
     return {k: [table[k][statistic] for table in results if k in table] for k in tokens}
 
 
-def get_CI(results: defaultdict(list)) -> defaultdict(float):
-    return {token: np.percentile(results[token], 90) for token in results}
+def get_CI(results: defaultdict(list), confidence: float = 90) -> defaultdict(np.array):
+    offset = (100 - confidence) / 2
+    return {
+        token: np.percentile(results[token], [offset, confidence + offset])
+        for token in results
+    }
 
 
 if __name__ == "__main__":

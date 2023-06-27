@@ -59,7 +59,9 @@ def get_counts(processed_corpus: List[dict]) -> "defaultdict[Counter]":
     return counts
 
 
-def get_table(counts: "defaultdict[Counter]") -> "defaultdict[defaultdict]":
+def get_table(
+    counts: defaultdict(Counter), smoothing_factor: float = 1e-10
+) -> defaultdict(defaultdict):
     """_summary_
 
     Args:
@@ -109,7 +111,11 @@ def get_table(counts: "defaultdict[Counter]") -> "defaultdict[defaultdict]":
         # The positive pointwise mutual information (PMI) between:
         #   i: the event this token is used
         #   j: the event a female speaker speaks (uses a word in V)
-        PPMI = max(np.log2(p_ij / (p_i * p_j)), 0) if p_ij != 0 else None
+        PMI = np.log2(
+            (p_ij + smoothing_factor)
+            / ((p_i + smoothing_factor) * (p_j + smoothing_factor))
+        )
+        PPMI = max(PMI, 0)
         table[token]["PPMI"] = PPMI
 
     return table

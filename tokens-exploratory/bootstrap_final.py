@@ -7,7 +7,7 @@ from final import get_counts, get_table
 from joblib import Parallel, delayed
 
 RANDOM_SEED = 375
-BOOTSTRAP_SIZE = 10000
+BOOTSTRAP_SIZE = 10
 STATISTIC = "PPMI"
 N_JOBS = 16
 
@@ -79,5 +79,5 @@ if __name__ == "__main__":
 
     CIs = get_CI(results)
 
-    with open("confidence_intervals.pickle", "wb") as handle:
+    with open("test.pickle", "wb") as handle:
         dump(CIs, handle, protocol=HIGHEST_PROTOCOL)

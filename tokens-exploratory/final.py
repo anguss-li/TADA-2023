@@ -123,6 +123,9 @@ def get_table(
 
 if __name__ == "__main__":
     corpus = process_corpus(get_corpus())
+    with open("processed_corpus_list.pickle", "wb") as handle:
+        dump(corpus, handle, protocol=HIGHEST_PROTOCOL)
+
     counts = get_counts(corpus)
     table = get_table(counts)
     with open("exploratory_table.pickle", "wb") as handle:

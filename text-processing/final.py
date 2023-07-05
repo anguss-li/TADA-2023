@@ -23,6 +23,7 @@ for year in years:
     corpus = corpus.merge(processor.get_corpus())
 
 corpus.dump("supreme_full_processed_lem", "..")
+processor = AdvocatesProcessor(corpus)
 
 with open("../processed_corpus_list.pickle", "wb") as handle:
-    dump(corpus, handle, protocol=HIGHEST_PROTOCOL)
+    dump(processor.listify_corpus(), handle, protocol=HIGHEST_PROTOCOL)

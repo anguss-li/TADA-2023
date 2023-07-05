@@ -1,39 +1,16 @@
 from collections import Counter, defaultdict
-from pickle import HIGHEST_PROTOCOL, dump
+from pickle import HIGHEST_PROTOCOL, dump, load
 from typing import List
 
 import numpy as np
-import os
 from convokit import Corpus, Utterance
 
 
 def get_corpus() -> Corpus:
-    corpus = Corpus(
-        filename=os.path.join(
-            os.path.dirname(__file__), os.pardir, "supreme_full_processed_lem"
-        )
-    )
-
-    # Filter out speakers without gender signal
-    corpus = corpus.filter_utterances_by(
-        lambda utt: utt.get_speaker().retrieve_meta("gender_signal") != None
-    )
+    with open("../processed_corpus_list.pickle", "rb") as handle:
+        corpus = load(handle)
 
     return corpus
-
-
-def process_corpus(corpus: Corpus) -> List[dict]:
-    """
-    Each Utterance in corpus becomes a dict containing the metadata important to us.
-    We do this because ConvoKit Utterance objects are not serializable using pickle.
-    """
-    return [
-        {
-            "tokens": utt.retrieve_meta("lem-tokens"),
-            "gender": utt.get_speaker().retrieve_meta("gender_signal"),
-        }
-        for utt in corpus.iter_utterances()
-    ]
 
 
 def get_counts(processed_corpus: List[dict]) -> "defaultdict[Counter]":
@@ -122,10 +99,7 @@ def get_table(
 
 
 if __name__ == "__main__":
-    corpus = process_corpus(get_corpus())
-    with open("processed_corpus_list.pickle", "wb") as handle:
-        dump(corpus, handle, protocol=HIGHEST_PROTOCOL)
-
+    corpus = get_corpus()
     counts = get_counts(corpus)
     table = get_table(counts)
     with open("exploratory_table.pickle", "wb") as handle:

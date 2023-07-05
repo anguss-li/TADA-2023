@@ -7,7 +7,7 @@ from final import get_counts, get_table
 from joblib import Parallel, delayed
 
 RANDOM_SEED = 375
-BOOTSTRAP_SIZE = 10
+BOOTSTRAP_SIZE = 10000
 STATISTIC = "PPMI"
 N_JOBS = 16
 
@@ -63,7 +63,7 @@ def get_CI(results: defaultdict(list), confidence: float = 90) -> defaultdict(np
 
 
 if __name__ == "__main__":
-    with open("processed_corpus_list.pickle", "rb") as handle:
+    with open("../processed_corpus_list.pickle", "rb") as handle:
         ground_truth_corpus = np.asarray(load(handle))
 
     with open("exploratory_table.pickle", "rb") as handle:
@@ -79,5 +79,5 @@ if __name__ == "__main__":
 
     CIs = get_CI(results)
 
-    with open("test.pickle", "wb") as handle:
+    with open("confidence_intervals.pickle", "wb") as handle:
         dump(CIs, handle, protocol=HIGHEST_PROTOCOL)

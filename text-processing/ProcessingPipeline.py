@@ -43,10 +43,28 @@ class AdvocatesProcessor:
             tokens = self.process_text(utt.text)
             utt.add_meta("lem-tokens", tokens)
 
+        # Filter out utterances with less than 10 tokens
+        self.corpus = self.corpus.filter_utterances_by(
+            lambda utt: len(utt.retrieve_meta("lem-tokens")) >= 10
+        )
+
+    def listify_corpus(self) -> List[dict]:
+        """
+        Each Utterance in corpus becomes a dict containing the metadata important to us.
+        We do this because ConvoKit Utterance objects are not serializable using pickle.
+        """
+        return [
+            {
+                "tokens": utt.retrieve_meta("lem-tokens"),
+                "gender": utt.get_speaker().retrieve_meta("gender_signal"),
+            }
+            for utt in self.corpus.iter_utterances()
+        ]
+
     def process_text(self, text: str) -> List[str]:
         """Returns *lemmatized* tokens from text"""
         lemmatizer = WordNetLemmatizer()
-        return [lemmatizer.lemmatize(token, pos = "n") for token in word_tokenize(text)]
+        return [lemmatizer.lemmatize(token, pos="n") for token in word_tokenize(text)]
 
     def _get_gender_signal(self, advocate: Speaker) -> str:
         # Get name, split into first, middle(?) and last

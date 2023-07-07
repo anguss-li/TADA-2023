@@ -21,7 +21,11 @@ class ALCProcessor:
         X = self._get_X(toks)
         Y = self._get_Y(toks)
 
+<<<<<<< HEAD
         return {"token": word, "X": X, "Y": Y}
+=======
+        return {"X": X, "Y": Y}
+>>>>>>> 8d46ee4bc428f305960a5b1fec0938fb97d3b883
 
     def _get_X(self, toks: List[Dict]) -> np.array:
         encoder = OneHotEncoder(drop="if_binary", sparse_output=False)
@@ -35,7 +39,11 @@ class ALCProcessor:
     def _process_is_female(self, toks: List[Dict]) -> np.array:
         return np.array([[True] if utt["gender"] == "F" else [False] for utt in toks])
 
+<<<<<<< HEAD
     def _get_Y(self, toks: List[Dict]) -> np.array:
+=======
+    def _get_Y(self, toks: List[Dict]) -> np.ndarray:
+>>>>>>> 8d46ee4bc428f305960a5b1fec0938fb97d3b883
         return np.array([self._get_w_v(utt) for utt in toks])
 
     def _get_w_v(self, utt: Dict) -> np.array:
@@ -43,12 +51,23 @@ class ALCProcessor:
         return np.matmul(self.transform, utt["u_v"])
 
     def _tokens_context(self, kw: str) -> Iterable[Dict]:
+<<<<<<< HEAD
         return [
             self._process_context_window(i, utt)
             for utt in self.corpus
             for i, tok in enumerate(utt["tokens"])
             if tok == kw
         ]
+=======
+        return np.array(
+            [
+                self._process_context_window(i, utt)
+                for utt in self.corpus
+                for i, tok in enumerate(utt["tokens"])
+                if tok == kw
+            ]
+        )
+>>>>>>> 8d46ee4bc428f305960a5b1fec0938fb97d3b883
 
     def _process_context_window(self, i: int, utt: Dict, window_size=6) -> Dict:
         assert "tokens" in utt, "Must use a valid utterance"
@@ -56,20 +75,32 @@ class ALCProcessor:
         window = utt["tokens"][i - bounds : i] + utt["tokens"][i + 1 : i + bounds]
         # Based on the principle that the vector for tok ~= this context average
         context_toks = [self._find_vec(tok) for tok in window]
+<<<<<<< HEAD
         # TODO: Decide if correct behavior
         u_v = sum(context_toks) / len(context_toks)
+=======
+        u_v = np.true_divide(sum(context_toks), len(context_toks))
+>>>>>>> 8d46ee4bc428f305960a5b1fec0938fb97d3b883
         # Necessary as utt is passed by reference
         new = utt.copy()
         new["window"] = context_toks
         new["u_v"] = u_v
         return new
 
+<<<<<<< HEAD
     def _find_vec(self, word: str) -> np.array:
+=======
+    def _find_vec(self, word: str) -> np.ndarray:
+>>>>>>> 8d46ee4bc428f305960a5b1fec0938fb97d3b883
         """Evil hack: if word not found in word_vectors we just return zeros."""
         try:
             return self.embeddings.get_vector(word)
         except KeyError:
+<<<<<<< HEAD
             return self._zeros()
 
     def _zeros(self) -> np.array:
         return np.zeros(shape=self.embeddings.get_vector("a").shape)
+=======
+            return np.zeros(shape=self.embeddings.get_vector("a").shape)
+>>>>>>> 8d46ee4bc428f305960a5b1fec0938fb97d3b883

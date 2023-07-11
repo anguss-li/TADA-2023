@@ -4,7 +4,7 @@ import regex as re
 from convokit import Corpus, Speaker
 from convokit.text_processing import TextCleaner
 from nltk.stem import WordNetLemmatizer
-from nltk.tokenize import word_tokenize
+from nltk.tokenize.regexp import wordpunct_tokenize
 
 
 class AdvocatesProcessor:
@@ -64,7 +64,8 @@ class AdvocatesProcessor:
     def process_text(self, text: str) -> List[str]:
         """Returns *lemmatized* tokens from text"""
         lemmatizer = WordNetLemmatizer()
-        return [lemmatizer.lemmatize(token, pos="n") for token in word_tokenize(text)]
+        # Using wordpunct_tokenize because it also splits on hyphens
+        return [lemmatizer.lemmatize(token, pos="n") for token in wordpunct_tokenize(text)]
 
     def _get_gender_signal(self, advocate: Speaker) -> str:
         # Get name, split into first, middle(?) and last

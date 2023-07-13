@@ -157,12 +157,8 @@ cython_debug/
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-<<<<<<< HEAD
 #.idea/
 
 ### ANGUS PROJECT SPECIFIC ###
 embeddings-exploratory/alc_stepone.pickle
 embeddings-exploratory/alc_steptwo.pickle
-=======
-#.idea/
->>>>>>> 8d46ee4bc428f305960a5b1fec0938fb97d3b883

@@ -3,6 +3,7 @@ from typing import List
 import regex as re
 from convokit import Corpus, Speaker
 from convokit.text_processing import TextCleaner
+from gensim.models import KeyedVectors
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize.regexp import wordpunct_tokenize
 
@@ -10,9 +11,9 @@ from nltk.tokenize.regexp import wordpunct_tokenize
 class AdvocatesProcessor:
     """Tokenizes, lemmatizes and adds gender signal metadata to supreme court corpus."""
 
-    def __init__(self, corpus: Corpus) -> None:
-        # Filter to just advocates
+    def __init__(self, corpus: Corpus, embeddings: KeyedVectors) -> None:
         self.corpus = corpus
+        self.embeddings = embeddings
 
     def process(self):
         is_advocate = lambda speaker: speaker.meta["type"] == "A"
@@ -43,6 +44,12 @@ class AdvocatesProcessor:
             tokens = self.process_text(utt.text)
             utt.add_meta("lem-tokens", tokens)
 
+        # Filter out OOV tokens
+        for utt in self.corpus.iter_utterances():
+            utt.meta["lem-tokens"] = [
+                tok for tok in utt.meta["lem-tokens"] if tok in self.embeddings
+            ]
+
         # Filter out utterances with less than 10 tokens
         self.corpus = self.corpus.filter_utterances_by(
             lambda utt: len(utt.retrieve_meta("lem-tokens")) >= 10
@@ -65,7 +72,9 @@ class AdvocatesProcessor:
         """Returns *lemmatized* tokens from text"""
         lemmatizer = WordNetLemmatizer()
         # Using wordpunct_tokenize because it also splits on hyphens
-        return [lemmatizer.lemmatize(token, pos="n") for token in wordpunct_tokenize(text)]
+        return [
+            lemmatizer.lemmatize(token, pos="n") for token in wordpunct_tokenize(text)
+        ]
 
     def _get_gender_signal(self, advocate: Speaker) -> str:
         # Get name, split into first, middle(?) and last

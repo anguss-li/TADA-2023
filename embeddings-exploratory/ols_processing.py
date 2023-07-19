@@ -20,8 +20,7 @@ def run_ols(X: np.array, Y: np.array) -> Dict[str, np.array]:
 
 
 def permute_ols(
-    token: Dict[str, np.array],
-    rng: np.random.Generator,
+    token: Dict[str, np.array], rng: np.random.Generator, confidence: float = 90
 ) -> Dict[str, np.array]:
     def sample():
         Y_permuted = rng.permutation(Y)
@@ -30,12 +29,25 @@ def permute_ols(
     X, Y = token["X"], token["Y"]
     assert X.shape[0] == Y.shape[0]
     normed_betas = [sample()["normed_betas"] for _ in range(BOOTSTRAP_SIZE)]
-    # The R code is a little difficult to read, but I think this is what it is doing
-    empirical_pvalue = np.divide(normed_betas, run_ols(X, Y)["normed_betas"])
+
+    # Getting confidence interval
+    offset = (100 - confidence) / 2
+    ci_normed_betas = np.percentile(normed_betas, [offset, confidence + offset], axis=0)
+
+    # Conducting permutation test: p-value is %values "more extreme" than ground_truth
+    ground_truth = run_ols(X, Y)["normed_betas"]
     empirical_pvalue = np.apply_along_axis(
-        lambda a: sum(1 if x > 1 else 0 for x in a) / len(a), 0, empirical_pvalue
+        lambda a: sum(1 if x > ground_truth else 0 for x in a) / len(a),
+        axis=0,
+        arr=normed_betas,
     )
-    return {"token": token["token"], "p-value": empirical_pvalue}
+
+    return {
+        "token": token["token"],
+        "ground truth": ground_truth,
+        "CI": ci_normed_betas,
+        "p-value": empirical_pvalue,
+    }
 
 
 if __name__ == "__main__":
@@ -48,8 +60,7 @@ if __name__ == "__main__":
     with Parallel(n_jobs=N_JOBS, verbose=100, prefer="threads") as parallel:
         streams = parallel(delayed(np.random.default_rng)(seed) for seed in child_seeds)
         alc_steptwo = parallel(
-            delayed(permute_ols)(token, rng)
-            for token, rng in zip(alc_stepone, streams)
+            delayed(permute_ols)(token, rng) for token, rng in zip(alc_stepone, streams)
         )
 
     with open("alc_steptwo.pickle", "wb") as handle:

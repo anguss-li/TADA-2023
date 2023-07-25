@@ -1,5 +1,5 @@
 #!/bin/sh
-#SBATCH -c 6               # Request CPU cores
+#SBATCH -c 24               # Request CPU cores
 #SBATCH -t 0-12:00          # Runtime in D-HH:MM, minimum of 10 mins
 #SBATCH -p dl               # Partition to submit to (should always be dl, for now)
 #SBATCH --mem=500G          # Request 100G of memory

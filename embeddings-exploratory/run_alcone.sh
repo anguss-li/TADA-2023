@@ -5,4 +5,4 @@
 #SBATCH --mem=500G          # Request 100G of memory
 #SBATCH -o myoutput_%j.out  # File to which STDOUT will be written (%j inserts jobid)
 #SBATCH -e myerrors_%j.err  # File to which STDERR will be written (%j inserts jobid)
-/home/angus/anaconda3/envs/nlp-research/bin/python /home/angus/summer-2023/embeddings-exploratory/dump_alc.py  # Command you want to run on the cluster
+/home/angus/anaconda3/envs/nlp-research/bin/python /home/angus/summer-2023/embeddings-exploratory/alc_processing.py  # Command you want to run on the cluster

@@ -1,8 +1,13 @@
+from pickle import HIGHEST_PROTOCOL, dump, load
 from typing import Dict, Iterable, List
 
+import gensim.downloader as api
 import numpy as np
 from gensim.models import KeyedVectors
+from joblib import Parallel, delayed
 from sklearn.preprocessing import OneHotEncoder
+
+N_JOBS = 6
 
 
 class ALCProcessor:
@@ -73,3 +78,49 @@ class ALCProcessor:
 
     def _zeros(self) -> np.array:
         return np.zeros(shape=self.embeddings.get_vector("a").shape)
+
+
+def process_wrapper(alc: ALCProcessor, word: str):
+    return alc.process(word)
+
+
+if __name__ == "__main__":
+    # GloVe Gigaword 100 dimensions
+    word_vectors = api.load("glove-wiki-gigaword-100")
+    print("Loaded word vectors")
+
+    matrixfile = "6B.100d.bin"
+    A = np.fromfile(matrixfile, dtype=np.float32)
+    d = int(np.sqrt(A.shape[0]))
+    print("Loaded transform matrix")
+
+    assert (
+        d == next(iter(word_vectors)).shape[0]
+    ), "induction matrix dimension and word embedding dimension must be the same"
+    A = A.reshape(d, d)
+
+    with open("../processed_corpus_list.pickle", "rb") as handle:
+        corpus = load(handle)
+
+    print("Loaded corpus")
+
+    alc_processor = ALCProcessor(corpus, word_vectors, A)
+
+    with open("../tokens-exploratory/exploratory_table.pickle", "rb") as handle:
+        table = load(handle)
+
+    print("Loaded table")
+
+    tokens = table.keys()
+
+    print("Loaded tokens")
+
+    # word_vectors is thread safe according to gensim docs.
+    # The other arguments are np arrays and ALCProcessor uses a lot of numpy
+    # operations so hopefully this works more effectively than in bootstrap_final
+    output = Parallel(n_jobs=N_JOBS, verbose=100, prefer="threads")(
+        delayed(process_wrapper)(alc_processor, token) for token in tokens
+    )
+
+    with open("alc_stepone.pickle", "wb") as handle:
+        dump(output, handle, protocol=HIGHEST_PROTOCOL)

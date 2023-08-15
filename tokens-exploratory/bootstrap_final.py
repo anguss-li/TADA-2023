@@ -1,9 +1,9 @@
-from collections import defaultdict
+from collections import defaultdict, Counter
 from pickle import HIGHEST_PROTOCOL, dump, load
-from typing import List
+from typing import List, Callable
 
 import numpy as np
-from final import get_counts, get_table
+from final import get_counts, get_PPMI_table
 from joblib import Parallel, delayed
 
 RANDOM_SEED = 375
@@ -14,7 +14,7 @@ N_JOBS = 16
 
 def get_table_from_corpus(processed_corpus: List[dict]) -> defaultdict:
     counts = get_counts(processed_corpus)
-    table = get_table(counts)
+    table = get_PPMI_table(counts)
     return table
 
 
@@ -76,6 +76,9 @@ if __name__ == "__main__":
     results = get_bootstrap_statistic(
         results, tokens=ground_truth_tokens, statistic=STATISTIC
     )
+
+    with open("bootstrap_results.pickle", "wb") as handle:
+        dump(results, handle, protocol=HIGHEST_PROTOCOL)
 
     CIs = get_CI(results)
 
